@@ -50,6 +50,7 @@ namespace Lunagram
 
             ResetMondOutput();
 
+            output = new StringWriter(outputBuffer);
             MondState.Libraries.Configure(libs =>
             {
                 var cout = libs.Get<ConsoleOutputLibrary>();
@@ -62,7 +63,6 @@ namespace Lunagram
         private static void ResetMondOutput()
         {
             outputBuffer = new StringBuilder(maxOutputChars);
-            output = new StringWriter(outputBuffer);
         }
 
         public static string ExecuteMond(string source)
