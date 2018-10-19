@@ -17,16 +17,25 @@ namespace Lunagram.Controllers
         public async Task<IActionResult> Post(Update update)
         {
             var message = update.Message;
-            switch (message.Type)
-            {
-                case MessageType.Text:
-                    var result = AppState.MondState.Run(update.Message.Text);
-                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result.Serialize());
-                    break;
 
-                default:
-                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Sorry, I did not understand that.");
-                    break;
+            Console.WriteLine("Received message from: {0}, {1}", message.Chat.Id, message.Chat.FirstName + " " + message.Chat.LastName);
+            try
+            {
+                switch (message.Type)
+                {
+                    case MessageType.Text:
+                        var result = AppState.MondState.Run(update.Message.Text);
+                        await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result.Serialize());
+                        break;
+
+                    default:
+                        await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Sorry, I did not understand that.");
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
 
             return Ok();
