@@ -47,6 +47,14 @@ namespace Lunagram
                     new ConsoleOutputLibraries()
                 }
             };
+
+            ResetMondOutput();
+
+            MondState.EnsureLibrariesLoaded();
+        }
+
+        private static void ResetMondOutput()
+        {
             outputBuffer = new StringBuilder(maxOutputChars);
             output = new StringWriter(outputBuffer);
 
@@ -55,13 +63,11 @@ namespace Lunagram
                 var cout = libs.Get<ConsoleOutputLibrary>();
                 cout.Out = output;
             });
-
-            MondState.EnsureLibrariesLoaded();
         }
 
         public static string ExecuteMond(string source)
         {
-            ConfigureMond();
+            ResetMondOutput();
             try
             {
                 MondValue result = MondState.Run(source);
