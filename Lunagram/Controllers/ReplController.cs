@@ -74,8 +74,16 @@ namespace Lunagram.Controllers
             try
             {
                 var result = AppState.ExecuteMond(text);
-                string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
-                await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Ok.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                }
+                else
+                {
+                    string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
+                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+
+                }
             }
             catch (Exception e)
             {
