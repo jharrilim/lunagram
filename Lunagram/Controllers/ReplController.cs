@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -71,11 +73,11 @@ namespace Lunagram.Controllers
         {
             try
             {
-                MondValue result = AppState.MondState.Run(text);
-                string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result.Serialize()) + "</pre>";
+                var result = AppState.ExecuteMond(text);
+                string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
                 await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
             }
-            catch (MondException e)
+            catch (Exception e)
             {
                 await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, e.Message);
             }            
