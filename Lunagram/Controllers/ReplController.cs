@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,36 +19,73 @@ namespace Lunagram.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(Update update)
         {
-            var message = update.Message;
 
+            if (update.Type == UpdateType.Message)
+            {
+                await OnMessageHandler(update.Message);
+            }
+            return Ok();
+        }
+        private static async Task<bool> OnMessageHandler(Message message)
+        {
             Console.WriteLine("Received message from: {0}, {1}", message.Chat.Id, message.Chat.FirstName + " " + message.Chat.LastName);
+
+            if (message.Type != MessageType.Text)
+                return false;
+
+            var commandEntity = message.Entities.FirstOrDefault(e => e.Type == MessageEntityType.BotCommand);
+            if (commandEntity == null)
+                return false;
+
+            var text = message.Text;
+            var commandText = CleanupCommand(text.Substring(commandEntity.Offset, commandEntity.Length));
+            var remainingText = text.Substring(commandEntity.Offset + commandEntity.Length);
+
+
+            switch (commandText)
+            {
+                case "help":
+                case "f1":
+                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "NO HELP");
+                    break;
+
+                case "eval":
+                    await RunMondScript(message, remainingText);
+                    break;
+
+                //case "method":
+                //    await AddMondMethod(message, remainingText);
+                //    break;
+
+                //case "view":
+                //    await ViewMondVariable(message, remainingText);
+                //    break;
+
+                default:
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static async Task RunMondScript(Message message, string text)
+        {
             try
             {
-                switch (message.Type)
-                {
-                    case MessageType.Text:
-                        try
-                        {
-                            var result = AppState.MondState.Run(update.Message.Text);
-                            await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result.Serialize());                    
-                        }
-                        catch (MondException e)
-                        {
-                            await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, e.Message);
-                        }
-                        break;
-
-                    default:
-                        await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Sorry, I did not understand that.");
-                        break;
-                }
+                var result = AppState.MondState.Run(message.Text);
+                var resultEncoded = "<pre>" + WebUtility.HtmlEncode(text) + "</pre>";
+                await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId , parseMode: ParseMode.Html);
             }
-            catch (Exception e)
+            catch (MondException e)
             {
-                Console.WriteLine(e.Message);
-            }
+                await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, e.Message);
+            }            
+        }
 
-            return Ok();
+        private static string CleanupCommand(string command)
+        {
+            Regex CommandRegex = new Regex(@"[/]+([a-z]+)");
+            return CommandRegex.Match(command).Groups[1].Value.ToLower();
         }
     }
 }
