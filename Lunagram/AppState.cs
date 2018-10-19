@@ -14,7 +14,13 @@ namespace Lunagram
 
         public static void Configure(string botToken, string url)
         {
-            MondState = new MondState();
+            MondState = new MondState()
+            {
+                Options =
+                {
+                    UseImplicitGlobals = true
+                }
+            };
             BotClient = new TelegramBotClient(botToken);
             BotClient.SetWebhookAsync(url);
         }
