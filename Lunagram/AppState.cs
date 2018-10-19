@@ -18,7 +18,8 @@ namespace Lunagram
             {
                 Options =
                 {
-                    UseImplicitGlobals = true
+                    UseImplicitGlobals = true,
+                    MakeRootDeclarationsGlobal = true
                 }
             };
             BotClient = new TelegramBotClient(botToken);
