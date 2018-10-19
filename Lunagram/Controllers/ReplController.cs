@@ -33,14 +33,13 @@ namespace Lunagram.Controllers
             if (message.Type != MessageType.Text)
                 return false;
 
-            var commandEntity = message.Entities.FirstOrDefault(e => e.Type == MessageEntityType.BotCommand);
+            MessageEntity commandEntity = message.Entities.FirstOrDefault(e => e.Type == MessageEntityType.BotCommand);
             if (commandEntity == null)
                 return false;
 
-            var text = message.Text;
-            var commandText = CleanupCommand(text.Substring(commandEntity.Offset, commandEntity.Length));
-            var remainingText = text.Substring(commandEntity.Offset + commandEntity.Length);
-
+            string text = message.Text;
+            string commandText = CleanupCommand(text.Substring(commandEntity.Offset, commandEntity.Length));
+            string remainingText = text.Substring(commandEntity.Offset + commandEntity.Length);
 
             switch (commandText)
             {
@@ -72,7 +71,7 @@ namespace Lunagram.Controllers
         {
             try
             {
-                var result = AppState.MondState.Run(message.Text);
+                var result = AppState.MondState.Run(text);
                 var resultEncoded = "<pre>" + WebUtility.HtmlEncode(text) + "</pre>";
                 await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId , parseMode: ParseMode.Html);
             }
