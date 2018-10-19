@@ -72,7 +72,7 @@ namespace Lunagram.Controllers
             try
             {
                 var result = AppState.MondState.Run(text);
-                var resultEncoded = "<pre>" + WebUtility.HtmlEncode(text) + "</pre>";
+                var resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
                 await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId , parseMode: ParseMode.Html);
             }
             catch (MondException e)
