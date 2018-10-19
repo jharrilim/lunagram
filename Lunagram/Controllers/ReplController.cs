@@ -76,7 +76,7 @@ namespace Lunagram.Controllers
                 var result = AppState.ExecuteMond(text);
                 if (string.IsNullOrWhiteSpace(result))
                 {
-                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Ok.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                    return;
                 }
                 else
                 {

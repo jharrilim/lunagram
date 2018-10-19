@@ -88,7 +88,7 @@ namespace Lunagram
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
                 output.WriteLine(e.Message);
             }
             return outputBuffer.ToString();
