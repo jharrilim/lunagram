@@ -61,14 +61,15 @@ namespace Lunagram
 
         public static string ExecuteMond(string source)
         {
-            outputBuffer = new StringBuilder(maxOutputChars);
-            output = new StringWriter(outputBuffer);
+            ConfigureMond();
             try
             {
                 MondValue result = MondState.Run(source);
 
                 if (result != MondValue.Undefined)
                 {
+                    Console.WriteLine("Result: ");
+                    Console.WriteLine(result.Serialize());
                     output.WriteLine();
 
                     if (result["moveNext"])
