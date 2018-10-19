@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Mond;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -24,8 +25,15 @@ namespace Lunagram.Controllers
                 switch (message.Type)
                 {
                     case MessageType.Text:
-                        var result = AppState.MondState.Run(update.Message.Text);
-                        await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result.Serialize());
+                        try
+                        {
+                            var result = AppState.MondState.Run(update.Message.Text);
+                            await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result.Serialize());                    
+                        }
+                        catch (MondException e)
+                        {
+                            await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, e.Message);
+                        }
                         break;
 
                     default:
