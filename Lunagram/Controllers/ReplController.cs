@@ -35,7 +35,7 @@ namespace Lunagram.Controllers
             if (message.Type != MessageType.Text)
                 return false;
 
-            MessageEntity commandEntity = message.Entities.FirstOrDefault(e => e.Type == MessageEntityType.BotCommand);
+            MessageEntity commandEntity = message?.Entities?.FirstOrDefault(e => e.Type == MessageEntityType.BotCommand);
             if (commandEntity == null)
                 return false;
 
@@ -73,7 +73,13 @@ namespace Lunagram.Controllers
         {
             try
             {
-                var result = AppState.ExecuteMond(text);
+                string result = "Timed out.";
+                await Task.WhenAny
+                (
+                    new Task(() => { result = AppState.ExecuteMond(text); }),
+                    Task.Delay(TimeSpan.FromSeconds(10))
+                );
+                result = AppState.ExecuteMond(text);
                 if (string.IsNullOrWhiteSpace(result))
                 {
                     return;
