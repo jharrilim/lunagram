@@ -54,14 +54,6 @@ namespace Lunagram.Controllers
                     await RunMondScript(message, remainingText);
                     break;
 
-                //case "method":
-                //    await AddMondMethod(message, remainingText);
-                //    break;
-
-                //case "view":
-                //    await ViewMondVariable(message, remainingText);
-                //    break;
-
                 default:
                     return false;
             }
