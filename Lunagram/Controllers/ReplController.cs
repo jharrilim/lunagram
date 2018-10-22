@@ -73,7 +73,10 @@ namespace Lunagram.Controllers
         private static async Task<Message> RandomFact(Message message)
         {
             string path = "https://en.wikipedia.org/wiki/Special:Random";
-            HtmlWeb web = new HtmlWeb();
+            HtmlWeb web = new HtmlWeb()
+            {
+                CaptureRedirect = true
+            };
             HtmlDocument doc = await web.LoadFromWebAsync(path);
             HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode("//*[@id=\"mw-content-text\"]/div/table/following-sibling::p[1]");
             var sb = new StringBuilder();
@@ -83,10 +86,18 @@ namespace Lunagram.Controllers
                 {
                     string text = node.InnerText;
                     if (!string.IsNullOrEmpty(text))
-                        sb.AppendLine(text.Trim());
+                    {
+                        sb.Append(text.Trim());
+                        sb.Append(' ');
+                    }
                 }
             }
-            string html = $"<i>From: {web?.ResponseUri?.AbsoluteUri}</i>\n{sb.ToString()}";
+
+            string html = $"{sb.ToString()}";
+            if(web?.ResponseUri?.AbsoluteUri != null)
+            {
+                html = $"<i>Taken from: {web.ResponseUri.AbsoluteUri}</i>" + html;
+            }
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
         }
