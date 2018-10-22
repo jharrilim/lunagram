@@ -54,11 +54,40 @@ namespace Lunagram.Controllers
                     await RunMondScript(message, remainingText);
                     break;
 
+                case "genie":
+                    await Genie(message, remainingText);
+                    break;
+
                 default:
                     return false;
             }
 
             return true;
+        }
+
+        private static async Task Genie(Message message, string text)
+        {
+            string res = "";
+            int rnd = new Random().Next(1, 6);
+            switch (rnd)
+            {
+                case 1: res = "Probably not.";
+                    break;
+                case 2: res = "Go for it.";
+                    break;
+                case 3: res = "Absolutely; you'll do great.";
+                    break;
+                case 4: res = "That is a very bad idea.";
+                    break;
+                case 5: res = "It seems a little risky, think carefully.";
+                    break;
+                case 6: res = "Make someone else do it instead.";
+                    break;
+                default: res = "I am unsure.";
+                    break;
+            }
+            string resultEncoded = "<i>" + WebUtility.HtmlEncode(res) + "</i>";
+            await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
         }
 
         private static async Task RunMondScript(Message message, string text)
