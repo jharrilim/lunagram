@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Mond;
@@ -58,11 +59,26 @@ namespace Lunagram.Controllers
                     await Genie(message, remainingText);
                     break;
 
+                case "randomfact":
+                    await RandomFact(message);
+                    break;
+
                 default:
                     return false;
             }
 
             return true;
+        }
+
+        private static async Task<Message> RandomFact(Message message)
+        {
+            string path = "https://en.wikipedia.org/wiki/Special:Random";
+            HtmlWeb web = new HtmlWeb();
+            HtmlDocument doc = await web.LoadFromWebAsync(path);
+            HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode("//*[@id=\"mw - content - text\"]/div/p[1]");
+            string html = $"<i>From: ${web.ResponseUri.AbsoluteUri}</i><br><p>{summaryNode.InnerHtml}</p>";
+            return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+
         }
 
         private static async Task<Message> Genie(Message message, string text)
