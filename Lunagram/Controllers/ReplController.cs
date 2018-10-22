@@ -76,7 +76,17 @@ namespace Lunagram.Controllers
             HtmlWeb web = new HtmlWeb();
             HtmlDocument doc = await web.LoadFromWebAsync(path);
             HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode("//*[@id=\"mw-content-text\"]/div/table/following-sibling::p[1]");
-            string html = $"<i>From: {web?.ResponseUri?.AbsoluteUri}</i><p>{summaryNode.InnerHtml}</p>";
+            var sb = new StringBuilder();
+            foreach (var node in summaryNode.DescendantsAndSelf())
+            {
+                if (!node.HasChildNodes)
+                {
+                    string text = node.InnerText;
+                    if (!string.IsNullOrEmpty(text))
+                        sb.AppendLine(text.Trim());
+                }
+            }
+            string html = $"<i>From: {web?.ResponseUri?.AbsoluteUri}</i>\n{sb.ToString()}";
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
         }
