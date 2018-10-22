@@ -72,13 +72,14 @@ namespace Lunagram.Controllers
 
         private static async Task<Message> RandomFact(Message message)
         {
-            string path = "https://en.wikipedia.org/wiki/Special:Random";
+            const string path = "https://en.wikipedia.org/wiki/Special:Random";
+            const string summaryXpath = "//*[@id=\"mw-content-text\"]/div/table/following-sibling::p[1]";
             HtmlWeb web = new HtmlWeb()
             {
                 CaptureRedirect = true
             };
             HtmlDocument doc = await web.LoadFromWebAsync(path);
-            HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode("//*[@id=\"mw-content-text\"]/div/table/following-sibling::p[1]");
+            HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode(summaryXpath);
             var sb = new StringBuilder();
             foreach (var node in summaryNode.DescendantsAndSelf())
             {
