@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Mond;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -75,7 +76,7 @@ namespace Lunagram.Controllers
             return true;
         }
 
-        private static async Task<Message> RandomChuckNorrisFact(Message message)
+        public static async Task<Message> RandomChuckNorrisFact(Message message)
         {
             using(HttpClient client = new HttpClient())
             {
@@ -84,8 +85,8 @@ namespace Lunagram.Controllers
                     HttpResponseMessage resp = await client.GetAsync("https://api.chucknorris.io/jokes/random");
                     resp.EnsureSuccessStatusCode();
                     string content = await resp.Content.ReadAsStringAsync();
-                    dynamic jsonContent = JsonConvert.DeserializeObject<dynamic>(content);
-                    string resultEncoded = "<b>" + WebUtility.HtmlEncode(jsonContent.value) + "</b>";
+                    JObject jsonContent = JsonConvert.DeserializeObject<JObject>(content);
+                    string resultEncoded = "<b>" + WebUtility.HtmlEncode(jsonContent["value"].Value<string>()) + "</b>";
                     return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
                 }
                 catch (Exception)
