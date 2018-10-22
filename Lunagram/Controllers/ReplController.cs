@@ -75,8 +75,8 @@ namespace Lunagram.Controllers
             string path = "https://en.wikipedia.org/wiki/Special:Random";
             HtmlWeb web = new HtmlWeb();
             HtmlDocument doc = await web.LoadFromWebAsync(path);
-            HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode("//*[@id=\"mw - content - text\"]/div/p[1]");
-            string html = $"<i>From: ${web.ResponseUri.AbsoluteUri}</i><br><p>{summaryNode.InnerHtml}</p>";
+            HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode("//*[@id=\"mw-content-text\"]/div/table/following-sibling::p[1]");
+            string html = $"<i>From: {web?.ResponseUri?.AbsoluteUri}</i><br><p>{summaryNode.InnerHtml}</p>";
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
         }
