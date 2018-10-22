@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Mond;
+using Newtonsoft.Json;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -63,11 +65,34 @@ namespace Lunagram.Controllers
                     await RandomFact(message);
                     break;
 
+                case "chucknorrisfact":
+                    await RandomChuckNorrisFact(message);
+                    break;
                 default:
                     return false;
             }
 
             return true;
+        }
+
+        private static async Task<Message> RandomChuckNorrisFact(Message message)
+        {
+            using(HttpClient client = new HttpClient())
+            {
+                try
+                {
+                    HttpResponseMessage resp = await client.GetAsync("https://api.chucknorris.io/jokes/random");
+                    resp.EnsureSuccessStatusCode();
+                    string content = await resp.Content.ReadAsStringAsync();
+                    dynamic jsonContent = JsonConvert.DeserializeObject<dynamic>(content);
+                    string resultEncoded = "<b>" + WebUtility.HtmlEncode(jsonContent.value) + "</b>";
+                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                }
+                catch (Exception)
+                {
+                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Request failed. Please try again later.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                }
+            }
         }
 
         private static async Task<Message> RandomFact(Message message)
