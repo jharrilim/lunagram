@@ -65,8 +65,14 @@ namespace Lunagram.Controllers
             return true;
         }
 
-        private static async Task Genie(Message message, string text)
+        private static async Task<Message> Genie(Message message, string text)
         {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                string r = "<i>" + "You must write a question such as: /genie Does Kiki love me?" + "</i>";
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, r, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+                
+            }
             string res = "";
             int rnd = Convert.ToInt32(Math.Ceiling(AppState.Rng.NextDouble() * 6));
             switch (rnd)
@@ -77,7 +83,7 @@ namespace Lunagram.Controllers
                     break;
                 case 3: res = "Absolutely!";
                     break;
-                case 4: res = "That is a very bad idea.";
+                case 4: res = "That is an absolute no.";
                     break;
                 case 5: res = "Seems a little risky, think carefully.";
                     break;
@@ -87,7 +93,7 @@ namespace Lunagram.Controllers
                     break;
             }
             string resultEncoded = "<i>" + WebUtility.HtmlEncode(res) + "</i>";
-            await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+            return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
         }
 
         private static async Task RunMondScript(Message message, string text)
