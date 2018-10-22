@@ -68,7 +68,7 @@ namespace Lunagram.Controllers
         private static async Task Genie(Message message, string text)
         {
             string res = "";
-            int rnd = new Random().Next(1, 6);
+            int rnd = Convert.ToInt32(Math.Ceiling(AppState.Rng.NextDouble() * 6));
             switch (rnd)
             {
                 case 1: res = "Probably not.";

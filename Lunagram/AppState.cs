@@ -12,12 +12,18 @@ namespace Lunagram
 {
     public static class AppState
     {
-        public static MondState         MondState { get; private set; }
-        public static TelegramBotClient BotClient { get; private set; }
-
         private const int maxOutputChars = 2048;
         private static StringWriter output;
         private static StringBuilder outputBuffer;
+
+        public static MondState         MondState { get; private set; }
+        public static TelegramBotClient BotClient { get; private set; }
+        public static Random            Rng       { get; private set; }
+
+        static AppState()
+        {
+            Rng = new Random();
+        }
 
         public static void Configure(string botToken, string url)
         {
