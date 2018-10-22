@@ -73,15 +73,15 @@ namespace Lunagram.Controllers
             {
                 case 1: res = "Probably not.";
                     break;
-                case 2: res = "Go for it.";
+                case 2: res = "Seems alright.";
                     break;
-                case 3: res = "Absolutely; you'll do great.";
+                case 3: res = "Absolutely!";
                     break;
                 case 4: res = "That is a very bad idea.";
                     break;
-                case 5: res = "It seems a little risky, think carefully.";
+                case 5: res = "Seems a little risky, think carefully.";
                     break;
-                case 6: res = "Make someone else do it instead.";
+                case 6: res = "I'm 50/50 on that one.";
                     break;
                 default: res = "I am unsure.";
                     break;
