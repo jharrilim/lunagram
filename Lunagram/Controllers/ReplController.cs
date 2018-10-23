@@ -76,7 +76,7 @@ namespace Lunagram.Controllers
             return true;
         }
 
-        public static async Task<Message> RandomChuckNorrisFact(Message message)
+        private static async Task<Message> RandomChuckNorrisFact(Message message)
         {
             using(HttpClient client = new HttpClient())
             {
