@@ -1,11 +1,9 @@
 ﻿using Mond;
 using Mond.Libraries;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot;
 
 namespace Lunagram
@@ -20,10 +18,7 @@ namespace Lunagram
         public static TelegramBotClient BotClient { get; private set; }
         public static Random            Rng       { get; private set; }
 
-        static AppState()
-        {
-            Rng = new Random();
-        }
+        static AppState() => Rng = new Random();
 
         public static void Configure(string botToken, string url)
         {

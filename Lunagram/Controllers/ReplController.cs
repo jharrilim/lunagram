@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,9 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Mond;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Telegram.Bot.Types;
@@ -126,16 +122,14 @@ namespace Lunagram.Controllers
                 html = $"<i>Taken from: {web.ResponseUri.AbsoluteUri}</i>" + html;
             }
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-
         }
 
         private static async Task<Message> Genie(Message message, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
-                string r = "<i>" + "You must write a question such as: /genie Does Kiki love me?" + "</i>";
+                string r = "<i>" + "You must write a question such as: Does Kiki love me?" + "</i>";
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, r, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-                
             }
             string res = "";
             int rnd = Convert.ToInt32(Math.Ceiling(AppState.Rng.NextDouble() * 6));
@@ -160,7 +154,7 @@ namespace Lunagram.Controllers
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
         }
 
-        private static async Task RunMondScript(Message message, string text)
+        private static async Task<Message> RunMondScript(Message message, string text)
         {
             try
             {
@@ -171,20 +165,17 @@ namespace Lunagram.Controllers
                     Task.Delay(TimeSpan.FromSeconds(10))
                 );
                 result = AppState.ExecuteMond(text);
-                if (string.IsNullOrWhiteSpace(result))
-                {
-                    return;
-                }
-                else
-                {
-                    string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
-                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
-                }
+                if (string.IsNullOrWhiteSpace(result))
+                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Got it.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+
+                string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
             }
             catch (Exception e)
             {
-                await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, e.Message);
+                Console.WriteLine(e);
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Oops! Something went wrong.", replyToMessageId: message.MessageId);
             }            
         }
 
