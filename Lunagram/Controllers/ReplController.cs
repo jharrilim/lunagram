@@ -28,67 +28,61 @@ namespace Lunagram.Controllers
             }
             return Ok();
         }
-        private static async Task<bool> OnMessageHandler(Message message)
+        private static async Task<Message> OnMessageHandler(Message message)
         {
             Console.WriteLine("Received message from: {0}, {1}", message.Chat.Id, message.Chat.FirstName + " " + message.Chat.LastName);
 
             if (message.Type != MessageType.Text)
-                return false;
+                return null;
 
             MessageEntity commandEntity = message?.Entities?.FirstOrDefault(e => e.Type == MessageEntityType.BotCommand);
             if (commandEntity == null)
-                return false;
+                return null;
 
             string text = message.Text;
             string commandText = CleanupCommand(text.Substring(commandEntity.Offset, commandEntity.Length));
             string remainingText = text.Substring(commandEntity.Offset + commandEntity.Length);
 
-            switch (commandText)
+            try
             {
-                case "help":
-                case "f1":
-                    await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "NO HELP");
-                    break;
+                switch (commandText)
+                {
+                    case "help":
+                    case "f1":
+                        return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "NO HELP");
 
-                case "eval":
-                    await RunMondScript(message, remainingText);
-                    break;
+                    case "eval":
+                        return await RunMondScript(message, remainingText);
 
-                case "genie":
-                    await Genie(message, remainingText);
-                    break;
+                    case "genie":
+                        return await Genie(message, remainingText);
 
-                case "randomfact":
-                    await RandomFact(message);
-                    break;
+                    case "randomfact":
+                        return await RandomFact(message);
 
-                case "chucknorrisfact":
-                    await RandomChuckNorrisFact(message);
-                    break;
-                default:
-                    return false;
+                    case "chucknorrisfact":
+                        return await RandomChuckNorrisFact(message);
+                    default:
+                        return null;
+                }
             }
-
-            return true;
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Oops! Something went wrong.");
+            }
         }
 
         private static async Task<Message> RandomChuckNorrisFact(Message message)
         {
             using(HttpClient client = new HttpClient())
             {
-                try
-                {
-                    HttpResponseMessage resp = await client.GetAsync("https://api.chucknorris.io/jokes/random");
-                    resp.EnsureSuccessStatusCode();
-                    string content = await resp.Content.ReadAsStringAsync();
-                    JObject jsonContent = JsonConvert.DeserializeObject<JObject>(content);
-                    string resultEncoded = "<b>" + WebUtility.HtmlEncode(jsonContent["value"].Value<string>()) + "</b>";
-                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-                }
-                catch (Exception)
-                {
-                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Request failed. Please try again later.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-                }
+                HttpResponseMessage resp = await client.GetAsync("https://api.chucknorris.io/jokes/random");
+                resp.EnsureSuccessStatusCode();
+                string content = await resp.Content.ReadAsStringAsync();
+                JObject jsonContent = JsonConvert.DeserializeObject<JObject>(content);
+                string resultEncoded = "<b>" + WebUtility.HtmlEncode(jsonContent["value"].Value<string>()) + "</b>";
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
             }
         }
 
@@ -156,27 +150,19 @@ namespace Lunagram.Controllers
 
         private static async Task<Message> RunMondScript(Message message, string text)
         {
-            try
-            {
-                string result = "Timed out.";
-                await Task.WhenAny
-                (
-                    new Task(() => { result = AppState.ExecuteMond(text); }),
-                    Task.Delay(TimeSpan.FromSeconds(10))
-                );
-                result = AppState.ExecuteMond(text);
+            string result = "Timed out.";
+            await Task.WhenAny
+            (
+                new Task(() => { result = AppState.ExecuteMond(text); }),
+                Task.Delay(TimeSpan.FromSeconds(10))
+            );
+            result = AppState.ExecuteMond(text);
 
-                if (string.IsNullOrWhiteSpace(result))
-                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Got it.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+            if (string.IsNullOrWhiteSpace(result))
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Got it.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
 
-                string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
-                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Oops! Something went wrong.", replyToMessageId: message.MessageId);
-            }            
+            string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
+            return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
         }
 
         private static string CleanupCommand(string command)
