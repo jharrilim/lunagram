@@ -86,7 +86,7 @@ namespace Lunagram.Controllers
             }
         }
 
-        private static async Task<Message> RandomFact(Message message)
+        private static async Task<HtmlNode> GetWikipediaTextNode()
         {
             const string path = "https://en.wikipedia.org/wiki/Special:Random";
             const string summaryXpath = "//*[@id=\"mw-content-text\"]/div/table/following-sibling::p[1]";
@@ -96,7 +96,23 @@ namespace Lunagram.Controllers
             };
             HtmlDocument doc = await web.LoadFromWebAsync(path);
             HtmlNode summaryNode = doc.DocumentNode.SelectSingleNode(summaryXpath);
-            var sb = new StringBuilder();
+            return summaryNode;
+        }
+
+        private static async Task<Message> RandomFact(Message message)
+        {
+            StringBuilder sb = new StringBuilder();
+            HtmlNode summaryNode = await GetWikipediaTextNode();
+
+            if (summaryNode == null)
+                summaryNode = await GetWikipediaTextNode();  // Theres a small chance that the xpath fails so try again
+
+            if (summaryNode == null)
+            {
+                string failMsg = "This time I couldn't find a fact. Go ahead and give it another shot.";
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, failMsg, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+            }
+
             foreach (var node in summaryNode.DescendantsAndSelf())
             {
                 if (!node.HasChildNodes)
@@ -109,12 +125,7 @@ namespace Lunagram.Controllers
                     }
                 }
             }
-
             string html = $"{sb.ToString()}";
-            if(web?.ResponseUri?.AbsoluteUri != null)
-            {
-                html = $"<i>Taken from: {web.ResponseUri.AbsoluteUri}</i>" + html;
-            }
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
         }
 
@@ -122,7 +133,7 @@ namespace Lunagram.Controllers
         {
             if (string.IsNullOrWhiteSpace(text))
             {
-                string r = "<i>" + "You must write a question such as: Does Kiki love me?" + "</i>";
+                string r = "<i>" + "You must write a question such as: Am I the father?" + "</i>";
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, r, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
             }
             string res = "";
