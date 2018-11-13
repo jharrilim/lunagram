@@ -40,7 +40,6 @@ namespace Lunagram
             {
                 app.UseHsts();
             }
-
             app.UseHttpsRedirection();
             app.UseMvc();
         }

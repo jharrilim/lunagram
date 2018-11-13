@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -62,6 +63,9 @@ namespace Lunagram.Controllers
 
                     case "chucknorrisfact":
                         return await RandomChuckNorrisFact(message);
+
+                    case "dadjoke":
+                        return await RandomDadJoke(message);
                     default:
                         return null;
                 }
@@ -174,6 +178,20 @@ namespace Lunagram.Controllers
 
             string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+        }
+
+        private static async Task<Message> RandomDadJoke(Message message)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                HttpResponseMessage resp = await client.GetAsync("https://icanhazdadjoke.com/");
+                resp.EnsureSuccessStatusCode();
+                string content = await resp.Content.ReadAsStringAsync();
+                JObject jsonContent = JsonConvert.DeserializeObject<JObject>(content);
+                string resultEncoded = "<b>" + WebUtility.HtmlEncode(jsonContent["joke"].Value<string>()) + "</b>";
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, resultEncoded, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+            }
         }
 
         private static string CleanupCommand(string command)
