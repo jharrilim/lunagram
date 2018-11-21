@@ -144,7 +144,7 @@ namespace Lunagram.Controllers
             if (rumiQuotes.Count == 0)
             {
                 const string path = "http://wisdomquotes.com/rumi-quotes/";
-                const string quotesRootNode = "//*[@id=\"post - 1847\"]/div[2]/";
+                const string quotesRootNode = "//*[@id=\"post - 1847\"]/div[2]";
                 List<string> rumis = new List<string>();
 
                 HtmlWeb web = new HtmlWeb()
