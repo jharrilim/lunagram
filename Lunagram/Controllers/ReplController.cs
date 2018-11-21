@@ -69,6 +69,9 @@ namespace Lunagram.Controllers
 
                     case "dadjoke":
                         return await RandomDadJoke(message);
+
+                    case "rumiquote":
+                        return await RandomRumiQuote(message);
                     default:
                         return null;
                 }
