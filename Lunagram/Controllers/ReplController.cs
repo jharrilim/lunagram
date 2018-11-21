@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -19,6 +20,8 @@ namespace Lunagram.Controllers
     [ApiController]
     public class ReplController : ControllerBase
     {
+        private static List<string> rumiQuotes = new List<string>();
+
         [HttpPost]
         public async Task<IActionResult> Post(Update update)
         {
@@ -131,6 +134,33 @@ namespace Lunagram.Controllers
             }
             string html = $"{sb.ToString()}";
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+        }
+
+        private static async Task<Message> RandomRumiQuote(Message message)
+        {
+            if (rumiQuotes.Count == 0)
+            {
+                const string path = "http://wisdomquotes.com/rumi-quotes/";
+                const string quotesRootNode = "//*[@id=\"post - 1847\"]/div[2]/";
+                List<string> rumis = new List<string>();
+
+                HtmlWeb web = new HtmlWeb()
+                {
+                    CaptureRedirect = true
+                };
+
+                HtmlDocument doc = await web.LoadFromWebAsync(path);
+                HtmlNode rootNode = doc.DocumentNode.SelectSingleNode(quotesRootNode);
+
+                foreach (var node in rootNode.SelectNodes("//blockquote"))
+                {
+                    rumis.Add(node.ChildNodes.First(n => n.Name == "p").InnerText);
+                }
+                rumiQuotes = rumis;
+            }
+            string rumi = rumiQuotes[Convert.ToInt32(Math.Floor(AppState.Rng.NextDouble() * rumiQuotes.Count))];
+            string quote = $"<i>{rumi}</i>";
+            return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, quote, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
         }
 
         private static async Task<Message> Genie(Message message, string text)
