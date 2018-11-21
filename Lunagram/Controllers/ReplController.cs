@@ -149,6 +149,9 @@ namespace Lunagram.Controllers
 
                 HtmlWeb web = new HtmlWeb();
                 HtmlDocument doc = await web.LoadFromWebAsync(path);
+                if (doc == null)
+                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Sorry, no Rumi quotes today.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
+
                 HtmlNode rootNode = doc.DocumentNode.SelectSingleNode(quotesRootNode);
 
                 foreach (var node in rootNode.SelectNodes("//blockquote"))
