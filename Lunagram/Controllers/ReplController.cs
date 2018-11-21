@@ -138,27 +138,37 @@ namespace Lunagram.Controllers
             string html = $"{sb.ToString()}";
             return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, html, replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
         }
+        private static void LoadRumiQuotes()
+        {
+            const string path = @"http://wisdomquotes.com/rumi-quotes/";
+            const string quotesRootNode = "//*[@id=\"post - 1847\"]/div[2]";
+            List<string> rumis = new List<string>();
+            var doc = new HtmlDocument();
+            doc.OptionReadEncoding = false;
+            var request = (HttpWebRequest)WebRequest.Create(path);
+            request.Method = "GET";
+            using (var response = (HttpWebResponse)request.GetResponse())
+            {
+                using (var stream = response.GetResponseStream())
+                {
+                    doc.Load(stream, Encoding.UTF8);
+                }
+            }
+            HtmlNode rootNode = doc.DocumentNode.SelectSingleNode(quotesRootNode);
+
+            foreach (var node in rootNode.SelectNodes("//blockquote"))
+            {
+                rumis.Add(node.ChildNodes.First(n => n.Name == "p").InnerText);
+            }
+            rumiQuotes = rumis;
+
+        }
 
         private static async Task<Message> RandomRumiQuote(Message message)
         {
             if (rumiQuotes.Count == 0)
             {
-                const string path = @"http://wisdomquotes.com/rumi-quotes/";
-                const string quotesRootNode = "//*[@id=\"post - 1847\"]/div[2]";
-                List<string> rumis = new List<string>();
-
-                HtmlWeb web = new HtmlWeb();
-                HtmlDocument doc = await web.LoadFromWebAsync(path);
-                if (doc == null)
-                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Sorry, no Rumi quotes today.", replyToMessageId: message.MessageId, parseMode: ParseMode.Html);
-
-                HtmlNode rootNode = doc.DocumentNode.SelectSingleNode(quotesRootNode);
-
-                foreach (var node in rootNode.SelectNodes("//blockquote"))
-                {
-                    rumis.Add(node.ChildNodes.First(n => n.Name == "p").InnerText);
-                }
-                rumiQuotes = rumis;
+                LoadRumiQuotes();
             }
             string rumi = rumiQuotes[Convert.ToInt32(Math.Floor(AppState.Rng.NextDouble() * rumiQuotes.Count))];
             string quote = $"<i>{rumi}</i>";
