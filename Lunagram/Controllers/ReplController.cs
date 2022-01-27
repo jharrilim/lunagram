@@ -76,6 +76,9 @@ namespace Lunagram.Controllers
 
                     case "inspiration":
                         return await InspirationalQuote(message);
+
+                    case "js":
+                        return await RunJavascript(message, remainingText);
                     default:
                         return null;
                 }
@@ -85,6 +88,18 @@ namespace Lunagram.Controllers
                 Console.WriteLine(e);
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Oops! Something went wrong.");
             }
+        }
+
+        private static async Task<Message> RunJavascript(Message message, string source)
+        {
+            string result = Javascript.JavascriptRunner.Run(source);
+            string resultEncoded = "<pre>" + WebUtility.HtmlEncode(result) + "</pre>";
+            return await AppState.BotClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: resultEncoded,
+                parseMode: ParseMode.Html,
+                replyToMessageId: message.MessageId
+            );
         }
 
         private static async Task<Message> InspirationalQuote(Message message)
@@ -97,7 +112,8 @@ namespace Lunagram.Controllers
                 return await AppState.BotClient.SendPhotoAsync(
                     chatId: message.Chat.Id,
                     photo: url,
-                    parseMode: ParseMode.Html
+                    parseMode: ParseMode.Html,
+                    replyToMessageId: message.MessageId
                 );
             }
         }
