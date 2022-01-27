@@ -73,6 +73,9 @@ namespace Lunagram.Controllers
 
                     case "rumiquote":
                         return await RandomRumiQuote(message);
+
+                    case "inspiration":
+                        return await InspirationalQuote(message);
                     default:
                         return null;
                 }
@@ -81,6 +84,21 @@ namespace Lunagram.Controllers
             {
                 Console.WriteLine(e);
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Oops! Something went wrong.");
+            }
+        }
+
+        private static async Task<Message> InspirationalQuote(Message message)
+        {
+            using(HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage resp = await client.GetAsync("https://inspirobot.me/api?generate=true");
+                resp.EnsureSuccessStatusCode();
+                string url = await resp.Content.ReadAsStringAsync();
+                return await AppState.BotClient.SendPhotoAsync(
+                    chatId: message.Chat.Id,
+                    photo: url,
+                    parseMode: ParseMode.Html
+                );
             }
         }
 
@@ -172,7 +190,7 @@ namespace Lunagram.Controllers
             {
                 case 1: res = "Probably not.";
                     break;
-                case 2: res = "Seems alright.";
+                case 2: res = "Maybe you should ask your parents.";
                     break;
                 case 3: res = "Absolutely!";
                     break;
