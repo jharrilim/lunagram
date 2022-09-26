@@ -55,7 +55,8 @@ namespace Lunagram.Controllers
                     case "help":
                     case "f1":
                         return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "NO HELP");
-
+                    case "whats":
+                        return await UrbanDictionaryTopResult(message);
                     case "eval":
                         return await RunMondScript(message, remainingText);
 
@@ -87,6 +88,29 @@ namespace Lunagram.Controllers
             {
                 Console.WriteLine(e);
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "Oops! Something went wrong.");
+            }
+        }
+
+        private static async Task<Message> UrbanDictionaryTopResult(Message message)
+        {
+            using(HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage resp = await client.GetAsync(
+                    "https://api.urbandictionary.com/v0/define?term=" + message.Text
+                );
+                resp.EnsureSuccessStatusCode();
+                string content = await resp.Content.ReadAsStringAsync();
+                JObject jsonContent = JsonConvert.DeserializeObject<JObject>(content);
+                JArray definitions = (JArray)jsonContent["list"];
+                if (definitions.Count == 0)
+                {
+                    return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "No results found.");
+                }
+                JObject definition = (JObject)definitions[0];
+                string definitionText = (string)definition["definition"];
+                string exampleText = (string)definition["example"];
+                string result = $"*{definitionText}*\n\n{exampleText}";
+                return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result, ParseMode.Markdown);
             }
         }
 
