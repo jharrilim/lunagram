@@ -113,7 +113,13 @@ namespace Lunagram.Controllers
                 string word = (string)definition["word"];
                 string definitionText = (string)definition["definition"];
                 string exampleText = (string)definition["example"];
-                string result = $"*{word}*\n\n{definitionText}\n\n*Example:*\n{exampleText}";
+                string thumbsUp = (string)definition["thumbs_up"];
+                string thumbsDown = (string)definition["thumbs_down"];
+                string writtenOn = (string)definition["written_on"];
+                string year = writtenOn.Substring(0, 4);
+                string exampleTextFormatted = exampleText.Length > 0 ? $"\n\n*Example:*\n{exampleText}" : "";
+
+                string result = $"*{word}*\n\n{definitionText}{exampleTextFormatted}\n\n{thumbsUp}👍 {thumbsDown}👎 - {year}";
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result, ParseMode.Markdown);
             }
         }
