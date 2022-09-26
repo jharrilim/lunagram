@@ -56,7 +56,7 @@ namespace Lunagram.Controllers
                     case "f1":
                         return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "NO HELP");
                     case "whats":
-                        return await UrbanDictionaryTopResult(message);
+                        return await UrbanDictionaryTopResult(remainingText);
                     case "eval":
                         return await RunMondScript(message, remainingText);
 
