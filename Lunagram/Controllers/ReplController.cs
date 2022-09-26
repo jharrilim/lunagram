@@ -120,7 +120,7 @@ namespace Lunagram.Controllers
                 string year = writtenOnDate.Year.ToString();
                 string exampleTextFormatted = exampleText.Length > 0 ? $"\n\n*Example:*\n{exampleText}" : "";
 
-                string result = $"*{word}*\n\n{definitionText}{exampleTextFormatted}\n\n`{thumbsUp}`👍 `{thumbsDown}`👎\n{year}";
+                string result = $"*{word}* ({year})\n\n{definitionText}{exampleTextFormatted}\n\n`{thumbsUp}` 👍   `{thumbsDown}` 👎";
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result, ParseMode.Markdown);
             }
         }
