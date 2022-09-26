@@ -107,9 +107,10 @@ namespace Lunagram.Controllers
                     return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "No results found.");
                 }
                 JObject definition = (JObject)definitions[0];
+                string word = (string)definition["word"];
                 string definitionText = (string)definition["definition"];
                 string exampleText = (string)definition["example"];
-                string result = $"*{definitionText}*\n\n{exampleText}";
+                string result = $"*{word}*\n\n{definitionText}\n\n*Example:*\n{exampleText}";
                 return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, result, ParseMode.Markdown);
             }
         }
