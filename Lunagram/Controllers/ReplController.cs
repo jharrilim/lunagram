@@ -56,7 +56,7 @@ namespace Lunagram.Controllers
                     case "f1":
                         return await AppState.BotClient.SendTextMessageAsync(message.Chat.Id, "NO HELP");
                     case "whats":
-                        return await UrbanDictionaryTopResult(remainingText);
+                        return await UrbanDictionaryTopResult(message, remainingText);
                     case "eval":
                         return await RunMondScript(message, remainingText);
 
@@ -91,12 +91,12 @@ namespace Lunagram.Controllers
             }
         }
 
-        private static async Task<Message> UrbanDictionaryTopResult(Message message)
+        private static async Task<Message> UrbanDictionaryTopResult(Message message, string text)
         {
             using(HttpClient client = new HttpClient())
             {
                 // url encode the search term
-                string searchTerm = WebUtility.UrlEncode(message.Text);
+                string searchTerm = WebUtility.UrlEncode(text);
 
                 HttpResponseMessage resp = await client.GetAsync(
                     "https://api.urbandictionary.com/v0/define?term=" + searchTerm
