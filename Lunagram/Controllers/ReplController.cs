@@ -95,8 +95,11 @@ namespace Lunagram.Controllers
         {
             using(HttpClient client = new HttpClient())
             {
+                // url encode the search term
+                string searchTerm = WebUtility.UrlEncode(message.Text);
+
                 HttpResponseMessage resp = await client.GetAsync(
-                    "https://api.urbandictionary.com/v0/define?term=" + message.Text
+                    "https://api.urbandictionary.com/v0/define?term=" + searchTerm
                 );
                 resp.EnsureSuccessStatusCode();
                 string content = await resp.Content.ReadAsStringAsync();
